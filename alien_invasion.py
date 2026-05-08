@@ -191,7 +191,25 @@ def run_game() -> None:
         return aliens_list
 
     aliens = create_aliens(level)
-    
+
+    def reset_game():
+        nonlocal ship, bullets, alien_bullets, score, level, health, game_active, game_won, aliens, alien_speed, alien_drop, alien_direction, difficulty_multiplier, charging, charge_start
+        ship = Ship(screen)
+        bullets.clear()
+        alien_bullets.clear()
+        score = 0
+        level = 1
+        health = max_health
+        game_active = True
+        game_won = False
+        aliens = create_aliens(level)
+        difficulty_multiplier = get_difficulty_multiplier(level)
+        alien_speed = base_alien_speed * difficulty_multiplier
+        alien_drop = base_alien_drop * difficulty_multiplier
+        alien_direction = 1
+        charging = False
+        charge_start = None
+
     # Alien movement
     difficulty_multiplier = get_difficulty_multiplier(level)
     alien_speed = base_alien_speed * difficulty_multiplier
@@ -219,6 +237,10 @@ def run_game() -> None:
                     if current_time - last_shot > fire_rate:
                         charging = True
                         charge_start = current_time
+                elif event.key == pygame.K_r and not game_active:
+                    reset_game()
+                elif event.key == pygame.K_q and not game_active:
+                    running = False
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     ship.moving_right = False
@@ -420,17 +442,21 @@ def run_game() -> None:
             if game_won:
                 win_text = font.render("You Win!", True, (0, 255, 0))
                 score_final = font.render(f"Final Score: {score}", True, (255, 255, 255))
-                win_rect = win_text.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery - 30))
-                score_rect = score_final.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery + 30))
+                win_rect = win_text.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery - 50))
+                score_rect = score_final.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery))
                 screen.blit(win_text, win_rect)
                 screen.blit(score_final, score_rect)
             else:
                 over_text = font.render("Game Over", True, (255, 0, 0))
                 score_final = font.render(f"Final Score: {score}", True, (255, 255, 255))
-                over_rect = over_text.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery - 30))
-                score_rect = score_final.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery + 30))
+                over_rect = over_text.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery - 50))
+                score_rect = score_final.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery))
                 screen.blit(over_text, over_rect)
                 screen.blit(score_final, score_rect)
+
+            restart_text = font.render("Press R to restart or Q to quit", True, (255, 255, 255))
+            restart_rect = restart_text.get_rect(center=(screen.get_rect().centerx, screen.get_rect().centery + 50))
+            screen.blit(restart_text, restart_rect)
 
         pygame.display.flip()
         clock.tick(60)
